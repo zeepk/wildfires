@@ -5,28 +5,42 @@ import moment from 'moment';
 
 const coords = [44.967243, -153.771556];
 const fields = [
-	{ key: 'IncidentName', name: 'Name' },
-	{ key: 'FireDiscoveryDateTime', name: 'Discovered' },
-	{ key: 'IncidentShortDescription', name: 'Desc.' },
-	{ key: 'POOState', name: 'State' },
-	{ key: 'POOCounty', name: 'County' },
-	{ key: 'FireCause', name: 'General Cause' },
-	{ key: 'FireCauseGeneral', name: 'Specific Cause' },
-	{ key: 'FireBehaviorGeneral', name: 'Severity' },
-	{ key: 'PercentContained', name: 'Contained' },
-	{ key: 'TotalIncidentPersonnel', name: 'Responders' },
-	{ key: 'DailyAcres', name: 'Acres' },
-	{ key: 'DailyAcres', name: 'Sq Miles' },
-	{ key: 'ModifiedOnDateTime_dtd', name: 'Last Updated' },
+	{ apikey: 'IncidentName', name: 'Name' },
+	{ apikey: 'FireDiscoveryDateTime', name: 'Discovered' },
+	{ apikey: 'IncidentShortDescription', name: 'Desc.' },
+	{ apikey: 'POOState', name: 'State' },
+	{ apikey: 'POOCounty', name: 'County' },
+	{ apikey: 'FireCause', name: 'General Cause' },
+	{ apikey: 'FireCauseGeneral', name: 'Specific Cause' },
+	{ apikey: 'FireBehaviorGeneral', name: 'Severity' },
+	{ apikey: 'PercentContained', name: 'Contained' },
+	{ apikey: 'TotalIncidentPersonnel', name: 'Responders' },
+	{ apikey: 'DailyAcres', name: 'Acres' },
+	{ apikey: 'DailyAcres', name: 'Sq Miles' },
+	{ apikey: 'ModifiedOnDateTime_dtd', name: 'Last Updated' },
 ];
 const API_URL =
 	'https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/Active_Fires/FeatureServer/0/query?where=1%3D1&outFields=ContainmentDateTime,ControlDateTime,CreatedOnDateTime,DailyAcres,DiscoveryAcres,FireBehaviorGeneral,FireBehaviorGeneral1,FireBehaviorGeneral2,FireBehaviorGeneral3,FireCause,FireCauseGeneral,FireCauseSpecific,FireDiscoveryDateTime,FireOutDateTime,IncidentName,IncidentShortDescription,IncidentTypeCategory,IncidentTypeKind,InitialLatitude,InitialLongitude,InitialResponseAcres,InitialResponseDateTime,IsFireCauseInvestigated,IsQuarantined,IsValid,PercentContained,PercentPerimeterToBeContained,POOCity,POOCounty,POOState,TotalIncidentPersonnel,CreatedOn,ModifiedOn,GlobalID,ModifiedOnDateTime_dt,CreatedOnDateTime_dt,CalculatedAcres,FireCode,ModifiedOnDateTime,IsDispatchComplete&outSR=4326&f=json';
 
 export default function App() {
+	const colorReturn = (severity) => {
+		switch (severity) {
+			case 'Minimal':
+				return '#0f571a';
+			case 'Active':
+			case 'Moderate':
+				return '#55570f';
+			case 'Extreme':
+				return '#570f0f';
+			default:
+				return '#212121';
+		}
+	};
+
 	const listItem = (name, value, index) => {
 		switch (name) {
 			case 'Contained':
-				value += '%';
+				value = value ? (value += '%') : 'Unknown';
 				break;
 			case 'Last Updated':
 			case 'Discovered':
@@ -50,15 +64,28 @@ export default function App() {
 					flex: 1,
 					flexDirection: 'row',
 					backgroundColor: `${index % 2 === 0 ? '#2e2e2e' : '#1f1f1f'}`,
-					padding: 8,
+					padding: 5,
 					width: 300,
 				}}
 			>
-				<View style={{ flex: 2, flexDirection: 'row' }}>
+				<View style={{ flex: 2, flexDirection: 'row', padding: 5 }}>
 					<Text style={{ color: 'white', flex: 1 }}>{name}</Text>
 				</View>
-				<View>
-					<Text style={{ color: 'white', flex: 1 }}>{value}</Text>
+				<View
+					style={{
+						padding: 5,
+						borderRadius: '30%',
+						backgroundColor: `${name === 'Severity' ? colorReturn(value) : ''}`,
+					}}
+				>
+					<Text
+						style={{
+							color: 'white',
+							flex: 1,
+						}}
+					>
+						{value}
+					</Text>
 				</View>
 			</View>
 		);
@@ -114,10 +141,11 @@ export default function App() {
 										<FlatList
 											style={{ borderRadius: '10%' }}
 											data={fields}
+											keyExtractor={(item) => item.name}
 											renderItem={(item) =>
 												listItem(
 													item.item.name,
-													fireData.data[item.item.key],
+													fireData.data[item.item.apikey],
 													item.index
 												)
 											}
